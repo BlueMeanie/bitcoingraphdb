@@ -1,0 +1,33 @@
+
+// here are few sample Cypher queries for interacting with the database
+
+// gets block #180
+
+START block=node:blocks("index:180")
+return block;
+
+START tx=node:transactions(hash="bd8cfe1837c88caa4ca37df77380d5b0af9692ed92ddbc247cd2aef388691d4f")
+return tx;
+
+// get output for a given Tx hash + output number
+
+START tx=node:transactions(hash="bd8cfe1837c88caa4ca37df77380d5b0af9692ed92ddbc247cd2aef388691d4f")
+MATCH (tx)-[out:has_output]-(output)
+where out.n = 0
+return output;
+
+// get blocks connected by tx
+
+START block=node:blocks("index:*")
+MATCH (block)-[:has_transaction]->(tx)-[:has_output]->(output)-[:output_to_input]->(input)<-[:has_input]-(tx2)<-[:has_transaction]-(block2)
+RETURN block,block2
+
+
+START address=node:addresses("address:*")
+MATCH (address)-[:address_out]->(output)-[output_to_input]->(input)<-[:has_input]-(tx)-[has_output]->(output2)<-[:address_out]-(address2)
+RETURN address, address2
+
+
+START address=node:addresses("address:*")
+MATCH (address)-[:address_out]->(output)-[output_to_input]->(input)<-[:has_input]-(tx)-[has_output]->(output2)<-[:address_out]-(address2)
+RETURN address, output.value, address2, output2.value
